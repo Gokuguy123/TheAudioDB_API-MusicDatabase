@@ -7,6 +7,8 @@ from pathlib import Path
 def check_if_file_exists(file_path):
     if Path(file_path).is_file():
         return True
+    if Path(file_path).is_dir():
+        return True
     else:
         return False
 
@@ -21,9 +23,12 @@ while 1==1:
     user_input = input("Please enter an artist's name to continue.\n")
     artist_name = user_input.replace(" ", "_") # Replace spaces with underscores for proper URL formatting
     dir_path = tkinter.filedialog.askdirectory(title="Select Directory to Save Album Data") # Prompts user to select a directory to save data
+    if check_if_file_exists(f"{dir_path}\{artist_name}") == False:
+        artist_path = Path(f"{dir_path}\{artist_name}")
+        artist_path.mkdir(parents=True, exist_ok=True)
 
 ### Album Data Retrieval ###
-    if check_if_file_exists(f"{dir_path}\{artist_name}_albumData_{date}.json") == False: # Check if file already exists before making request from API
+    if check_if_file_exists(f"{dir_path}\{artist_name}\{artist_name}_albumData_{date}.json") == False: # Check if file already exists before making request from API
 
         album_url = f"{base_url}{album_endpoint}{artist_name}" # Assembles the full URL for album search
         response = requests.get(album_url)
@@ -32,7 +37,7 @@ while 1==1:
             data = response.json()
             try:
                 first_value = data["album"][0]["idAlbum"] # Attempt to check that at least one album exists for the artist requested
-                file_name = f"{dir_path}\{artist_name}_albumData_{date}.json"
+                file_name = f"{dir_path}\{artist_name}\{artist_name}_albumData_{date}.json"
                 with open(file_name, "w", encoding = "utf-8") as file:
                     json.dump(data, file, indent=4) # Saves album data to JSON file
                 break # Artist data has been saved, exit loop
@@ -61,7 +66,7 @@ for i in range(album_count): # Collects all album IDs for the artist
             print(f"Could not find track data for '{album_id}'. Skipping...\n")
             break # Exit loop if no track data found
 
-        file_name = f"{dir_path}\{artist_name}_{album_id}_trackData_{date}.json"
+        file_name = f"{dir_path}\{artist_name}\{artist_name}_{album_id}_trackData_{date}.json"
         with open(file_name, "w", encoding = "utf-8") as file:
             json.dump(track_data, file, indent=4) # Saves track data to JSON file
 
