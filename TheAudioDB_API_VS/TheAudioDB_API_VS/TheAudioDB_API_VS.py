@@ -53,7 +53,6 @@ for i in range(album_count): # Collects all album IDs for the artist
     track_response = requests.get(track_url)
 
     if track_response.status_code == 200:
-
         track_data = track_response.json()
         try:
             first_value = track_data["track"][0]["idTrack"] # Attempt to check that at least one track exists for the artist requested
