@@ -1,6 +1,3 @@
-import os
-from tabnanny import check
-#import pandas
 import requests
 import time
 import tkinter, tkinter.filedialog
@@ -19,13 +16,13 @@ base_url = "https://www.theaudiodb.com/api/v1/json/123/" # Base URL with a place
 album_endpoint = "searchalbum.php?s=" # Endpoint for searching albums by artist name
 track_endpoint = "track.php?m=" # Endpoint for pulling all tracks on an album by album ID
 
-
 while 1==1:
 
     user_input = input("Please enter an artist's name to continue.\n")
     artist_name = user_input.replace(" ", "_") # Replace spaces with underscores for proper URL formatting
     dir_path = tkinter.filedialog.askdirectory(title="Select Directory to Save Album Data") # Prompts user to select a directory to save data
 
+### Album Data Retrieval ###
     if check_if_file_exists(f"{dir_path}\{artist_name}_albumData_{date}.json") == False: # Check if file already exists before making request from API
 
         album_url = f"{base_url}{album_endpoint}{artist_name}" # Assembles the full URL for album search
@@ -46,16 +43,11 @@ while 1==1:
     
     else:
         print("Album data file already exists in the selected directory. Skipping request...\n")
-### Album Data Retrieval ###
-
-#pandas.read_json(album_url).to_json(f"{dir_path}\{artist_name}_albumData_{date}.json", orient="records", indent=4) # Saves album data to JSON file
-
 
 ### Track Data Retrieval ###
 album_count = len(list(data["album"])) # Counts the number of albums that are listed for the artist
 
 for i in range(album_count): # Collects all album IDs for the artist
-    #album_ids.append(data["album"][int(i)]["idAlbum"])
     album_id = data["album"][int(i)]["idAlbum"] # Gets the album ID for the current album in the loop
     track_url = f"{base_url}{track_endpoint}{album_id}" # Assembles the full URL for track search by album ID
     track_response = requests.get(track_url)
