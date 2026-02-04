@@ -11,6 +11,10 @@
     <OutputPath>.</OutputPath>
     <Name>TheAudioDB_API_VS</Name>
     <RootNamespace>TheAudioDB_API_VS</RootNamespace>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <CommandLineArguments>"Josh Turner" "G:\JSON Artist Data"</CommandLineArguments>
+    <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
+    <IsWindowsApplication>False</IsWindowsApplication>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>

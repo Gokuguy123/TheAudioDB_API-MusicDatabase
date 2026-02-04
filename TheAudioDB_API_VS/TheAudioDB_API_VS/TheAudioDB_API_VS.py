@@ -1,7 +1,9 @@
+from genericpath import isdir
 import requests
 import time
-import tkinter, tkinter.filedialog
+#import tkinter, tkinter.filedialog
 import json
+import sys
 from pathlib import Path
 
 def check_if_file_exists(file_path):
@@ -12,6 +14,11 @@ def check_if_file_exists(file_path):
     else:
         return False
 
+search_artist = sys.argv[1] # Get artist name from argument
+dir_path = sys.argv[2]  # Get directory path from argument
+
+print(f"Searching for artist: {search_artist}")
+
 date = time.strftime("%Y-%m-%d")   
 
 base_url = "https://www.theaudiodb.com/api/v1/json/123/" # Base URL with a placeholder API key (Free tier API used)
@@ -20,34 +27,40 @@ track_endpoint = "track.php?m=" # Endpoint for pulling all tracks on an album by
 
 while 1==1:
 
-    user_input = input("Please enter an artist's name to continue.\n")
-    artist_name = user_input.replace(" ", "_") # Replace spaces with underscores for proper URL formatting
-    dir_path = tkinter.filedialog.askdirectory(title="Select Directory to Save Album Data") # Prompts user to select a directory to save data
-    if check_if_file_exists(f"{dir_path}\{artist_name}") == False:
-        artist_path = Path(f"{dir_path}\{artist_name}")
-        artist_path.mkdir(parents=True, exist_ok=True)
+    #user_input = input("Please enter an artist's name to continue.\n")       
+       ### Replaced user input with argument
+    artist_name = search_artist.replace(" ", "_") # Replace spaces with underscores for proper URL formatting
+    #dir_path = tkinter.filedialog.askdirectory(title="Select Directory to Save Album Data") # Prompts user to select a directory to save data
+        # Replaced directory selection dialog with argument for easier automation
 
 ### Album Data Retrieval ###
-    if check_if_file_exists(f"{dir_path}\{artist_name}\{artist_name}_albumData_{date}.json") == False: # Check if file already exists before making request from API
+        
+    album_url = f"{base_url}{album_endpoint}{artist_name}" # Assembles the full URL for album search
+    response = requests.get(album_url)
 
-        album_url = f"{base_url}{album_endpoint}{artist_name}" # Assembles the full URL for album search
-        response = requests.get(album_url)
+    if response.status_code == 200:
 
-        if response.status_code == 200:
-            data = response.json()
-            try:
-                first_value = data["album"][0]["idAlbum"] # Attempt to check that at least one album exists for the artist requested
-                file_name = f"{dir_path}\{artist_name}\{artist_name}_albumData_{date}.json"
-                with open(file_name, "w", encoding = "utf-8") as file:
-                    json.dump(data, file, indent=4) # Saves album data to JSON file
-                break # Artist data has been saved, exit loop
-            except:
-                print("Artist not found. Please check spelling and try again.\n")
-        else:
-            print("Failed to connect. Please try again later")
-    
+        artist_path = Path(f"{dir_path}\{artist_name}") # Path object for artist directory
+        if check_if_file_exists(f"{dir_path}\{artist_name}") == False: # Checks if artist directory exists, create if not
+            artist_path.mkdir(parents=True, exist_ok=True)
+        else: # If artist directory exists, clear folder of previous data
+            for file in artist_path.iterdir():
+                file.unlink()
+
+        data = response.json()
+        try:
+            first_value = data["album"][0]["idAlbum"] # Attempt to check that at least one album exists for the artist requested
+            file_name = f"{dir_path}\{artist_name}\{artist_name}_albumData_{date}.json"
+            with open(file_name, "w", encoding = "utf-8") as file:
+                json.dump(data, file, indent=4) # Saves album data to JSON file
+            break # Artist data has been saved, exit loop
+        except:
+            print("Artist not found. Please check spelling and try again.\n")
+            sys.exit()  
     else:
-        print("Album data file already exists in the selected directory. Skipping request...\n")
+        print("Failed to connect. Please try again later")
+        sys.exit()
+    
 
 ### Track Data Retrieval ###
 album_count = len(list(data["album"])) # Counts the number of albums that are listed for the artist
@@ -73,3 +86,6 @@ for i in range(album_count): # Collects all album IDs for the artist
 
     else:
         print(f"Could not find track data for '{album_id}'. Skipping...\n")
+        sys.exit()
+
+sys.exit()
